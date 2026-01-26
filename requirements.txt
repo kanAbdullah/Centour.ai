@@ -1,0 +1,13 @@
+# basic 
+flask
+flask_cors
+flask_jwt_extended
+
+# postgreSQL
+flask_sqlalchemy
+sqlalchemy
+psycopg2-binary
+# llm interaction
+google.genai
+# password hashing
+argon-cffi
