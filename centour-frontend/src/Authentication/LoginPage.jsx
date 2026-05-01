@@ -1,3 +1,4 @@
+import './LoginPage.css';
 import { useState } from 'react';
 
 export default function LoginPage(props) {
@@ -88,73 +89,68 @@ export default function LoginPage(props) {
     };
 
     return (
-        <div>
-            <div>
-                <h2 > {isLoginningIn ? "Login" : "Sign Up"}</h2>
+    <div className="login-container">
+        <div className="login-card">
+            <h2>{isLoginningIn ? "Login" : "Sign Up"}</h2>
 
-                <div>
-                    <div >
-                        <label htmlFor="email" >
-                            Email
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="mb-6">
-                        <label htmlFor="username">
-                            Username
-                        </label>
-                        <input
-                            type="username"
-                            id="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSubmit(e)}
-                            required
-                        />
-                    </div>
-
-                    <div className="mb-6">
-                        <label htmlFor="password">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSubmit(e)}
-                            required
-                        />
-                    </div>
-
-                    {error && (
-                        <div>
-                            {error}
-                        </div>
-                    )}
-
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                    >
-                        {isLoginningIn
-                            ? (loading ? 'Logging in...' : 'Login')
-                            : (loading ? 'Signing up...' : 'Sign Up')}
-                    </button>
-                    <button
-                        onClick={() => setIsLoggingIn(!isLoginningIn)}
-                    >
-                        {isLoginningIn ? "Don't have an account?" : "Already have an account?"}
-                    </button>
+            <form onSubmit={handleSubmit}> {/* Button onClick yerine form onSubmit daha sağlıklıdır */}
+                <div className="form-group">
+                    <label htmlFor="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
                 </div>
-            </div>
-        </div >
-    );
+
+                <div className="form-group">
+                    <label htmlFor="username">Username</label>
+                    <input
+                        type="text" // type="username" yerine "text" kullanmalısın
+                        id="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </div>
+
+                {error && (
+                    <div className="error-message">
+                        {error}
+                    </div>
+                )}
+
+                <button
+                    type="submit" // handleSubmit'i tetikler
+                    className="primary-btn"
+                    disabled={loading}
+                >
+                    {isLoginningIn
+                        ? (loading ? 'Logging in...' : 'Login')
+                        : (loading ? 'Signing up...' : 'Sign Up')}
+                </button>
+            </form>
+
+            <button
+                className="secondary-btn"
+                onClick={() => setIsLoggingIn(!isLoginningIn)}
+            >
+                {isLoginningIn ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+            </button>
+        </div>
+    </div>
+);
 }
