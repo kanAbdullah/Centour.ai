@@ -32,15 +32,15 @@ function App() {
 
   return (
     isAuthenticated ? (
-      <>
+      <div className= "app-layout">
         <Sidebar
           onSelectChat={setSelectedChatId}
           resetChat={() => setSelectedChatId(null)}
         />
-        <div >
+        <div className="app-main">
           {selectedChatId ? (<ChatView chatId={selectedChatId} />) : (<Dashboard />)}
         </div>
-      </>
+      </div>
     ) :
       (<LoginPage loggedIn={() => setIsAuthenticated(true)} />)
   )
