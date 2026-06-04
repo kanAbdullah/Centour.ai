@@ -1,72 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ── Dark theme (default) ── */
+:root,
+:root[data-theme="dark"] {
+  --bg:             #080E1A;
+  --surface:        #0F172A;
+  --surface-2:      #0C1628;
+  --accent:         #2DD4BF;
+  --accent-dark:    #2bc4b0;
+  --accent-text:    #0F172A;
+  --accent-rgb:     45, 212, 191;
+  --text-primary:   #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted:     #64748B;
+  --border:         rgba(45, 212, 191, 0.08);
+  --border-accent:  rgba(45, 212, 191, 0.2);
+  --card-border:    rgba(45, 212, 191, 0.12);
+  --input-bg:       rgba(255, 255, 255, 0.04);
+  --input-border:   rgba(255, 255, 255, 0.08);
+  --overlay:        rgba(255, 255, 255, 0.04);
+  --overlay-hover:  rgba(45, 212, 191, 0.06);
+  --code-bg:        rgba(255, 255, 255, 0.06);
+  --pre-bg:         rgba(0, 0, 0, 0.3);
+  --pre-border:     rgba(255, 255, 255, 0.06);
+  --scrollbar:      rgba(45, 212, 191, 0.12);
+  --msg-user-bg:    rgba(45, 212, 191, 0.1);
+  --msg-user-border:rgba(45, 212, 191, 0.18);
+  --msg-ai-bg:      #0F172A;
+  --msg-ai-border:  rgba(255, 255, 255, 0.05);
+  --error-bg:       rgba(220, 38, 38, 0.1);
+  --error-border:   rgba(220, 38, 38, 0.2);
+  --error-text:     #FCA5A5;
+  --btn-disabled-bg:#164E63;
+  --btn-disabled-fg:#0E7490;
+  --glow-1:         rgba(45, 212, 191, 0.07);
+  --glow-2:         rgba(45, 212, 191, 0.04);
+  color-scheme: dark;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* ── Light theme ── */
+:root[data-theme="light"] {
+  --bg:             #FFF5F7;
+  --surface:        #FFFFFF;
+  --surface-2:      #FFE8EF;
+  --accent:         #EC4899;
+  --accent-dark:    #DB2777;
+  --accent-text:    #FFFFFF;
+  --accent-rgb:     236, 72, 153;
+  --text-primary:   #1E1033;
+  --text-secondary: #6B4C7A;
+  --text-muted:     #A87A95;
+  --border:         rgba(236, 72, 153, 0.1);
+  --border-accent:  rgba(236, 72, 153, 0.25);
+  --card-border:    rgba(236, 72, 153, 0.15);
+  --input-bg:       rgba(0, 0, 0, 0.03);
+  --input-border:   rgba(0, 0, 0, 0.1);
+  --overlay:        rgba(0, 0, 0, 0.03);
+  --overlay-hover:  rgba(236, 72, 153, 0.06);
+  --code-bg:        rgba(0, 0, 0, 0.05);
+  --pre-bg:         rgba(0, 0, 0, 0.04);
+  --pre-border:     rgba(0, 0, 0, 0.08);
+  --scrollbar:      rgba(236, 72, 153, 0.15);
+  --msg-user-bg:    rgba(236, 72, 153, 0.08);
+  --msg-user-border:rgba(236, 72, 153, 0.2);
+  --msg-ai-bg:      #FFFFFF;
+  --msg-ai-border:  rgba(0, 0, 0, 0.06);
+  --error-bg:       rgba(220, 38, 38, 0.08);
+  --error-border:   rgba(220, 38, 38, 0.15);
+  --error-text:     #DC2626;
+  --btn-disabled-bg:rgba(236, 72, 153, 0.1);
+  --btn-disabled-fg:rgba(236, 72, 153, 0.4);
+  --glow-1:         rgba(236, 72, 153, 0.06);
+  --glow-2:         rgba(236, 72, 153, 0.03);
+  color-scheme: light;
 }
-a:hover {
-  color: #535bf2;
-}
+
+/* ── Globals ── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
+  background: var(--bg);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
+h1, h2, h3, h4, h5, h6 { margin: 0; }
+p  { margin: 0; }
+ul { list-style: none; margin: 0; padding: 0; }
+button { font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; }

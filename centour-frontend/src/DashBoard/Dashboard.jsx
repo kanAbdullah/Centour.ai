@@ -1,27 +1,17 @@
-import { Container } from "postcss";
-import { react } from "react";
+import './Dashboard.css';
 
-export default function Dashboard(props) {
-    return (
-        <div style={styles.container}>
-            <h2 style={styles.title}>Studies</h2>
+export default function Dashboard() {
+  return (
+    <div className="dashboard">
+      <div className="dashboard-center">
+        <div className="dashboard-logo">
+          <div className="dashboard-logo-icon">
+            <div className="dashboard-logo-dot" />
+          </div>
         </div>
-    )
+        <h1 className="dashboard-title">centour<span>.ai</span></h1>
+        <p className="dashboard-subtitle">Select a chat from the sidebar to get started.</p>
+      </div>
+    </div>
+  );
 }
-
-const styles = {
-    container: {
-        top: "0px",
-        left: "250px",
-        height: "7vh",
-        width: "calc(100% - 250px)",
-        position: "fixed",
-        padding: "10px",
-        backgroundColor: "#56569eff",
-    },
-    title: {
-        color: "white",
-        textAlign: "left",
-        marginLeft: "20px",
-    }
-};

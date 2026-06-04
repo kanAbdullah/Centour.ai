@@ -1,42 +1,22 @@
-import { React, use, useEffect, useState } from "react";
+import './Sidebar.css';
 import SidebarBottomMenu from "./SidebarBottomMenu";
 import SideBarContentController from "./SideBarContentController";
 
-export default function Sidebar(props) {
-  const [onSelectChat, setOnSelectChat] = useState(null);
-
-  useEffect(() => {
-    console.log("Sidebar comp id:", onSelectChat);
-    props.onSelectChat?.(onSelectChat);
-  }, [onSelectChat]);
+export default function Sidebar({ onSelectChat, resetChat, onLogout }) {
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Sidebar</h2>
-      <SideBarContentController onSelectChat={setOnSelectChat} />
-      <SidebarBottomMenu resetChat={props.resetChat} />
+    <div className="sidebar">
+      <div className="sidebar-brand">
+        <div className="sidebar-brand-icon">
+          <div className="sidebar-brand-dot" />
+        </div>
+        <span className="sidebar-brand-name">
+          centour<span>.ai</span>
+        </span>
+      </div>
+      <div className="sidebar-content">
+        <SideBarContentController onSelectChat={onSelectChat} />
+      </div>
+      <SidebarBottomMenu resetChat={resetChat} onLogout={onLogout} />
     </div>
   );
 }
-
-const styles = {
-  container: {
-    position: " fixed",
-    top: "0",
-    left: "0",
-    width: "250px",
-    height: "100vh",
-    backgroundColor: "#56569eff",
-    color: "white",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    padding: "15px",
-    boxSizing: "border-box",
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: "20px",
-    borderBottom: "1px solid #444",
-    paddingBottom: "10px",
-  },
-};

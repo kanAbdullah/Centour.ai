@@ -1,34 +1,22 @@
 import { useEffect, useState, useRef } from 'react';
+import { api } from '../api/ApiClient.jsx';
+import './SideBarContentController.css';
 
-export default function SideBarContentController(props) {
-
-  const [currentBarContent, setcurrentBarContent] = useState([]);
+export default function SideBarContentController({ onSelectChat }) {
+  const [currentBarContent, setCurrentBarContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentState, setCurrentState] = useState("studies");
+  const [isAdding, setIsAdding] = useState(false);
+  const [newItemTitle, setNewItemTitle] = useState("");
 
   const studyIdRef = useRef(null);
   const topicIdRef = useRef(null);
-  const chatIdRef = useRef(null);
-
 
   useEffect(() => {
-
-    const token = localStorage.getItem("access_token");
-    console.log("access_token in SideBarContentController.jsx:", token);
-    if (!token) return;
-
     async function load() {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/studies`, {
-          method: 'GET',
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          }
-        });
-        if (!res.ok) throw new Error('Network err');
-        const data = await res.json();
-        setcurrentBarContent(data);
+        const { data } = await api.get('/studies');
+        setCurrentBarContent(data);
       } catch (e) {
         console.error(e);
       } finally {
@@ -39,43 +27,24 @@ export default function SideBarContentController(props) {
   }, []);
 
   async function onSelect(id) {
-    console.log("Selected study ID:", id);
-    console.log("currentstate:", currentState);
-
     let fetchUrl = "";
 
     if (currentState === "studies") {
       studyIdRef.current = id;
-      fetchUrl = `${import.meta.env.VITE_API_URL}/topics/${id}`;
+      fetchUrl = `/topics/${id}`;
       setCurrentState("topics");
     } else if (currentState === "topics") {
-      //this case for topic selection among the topics
-      // that under the selected study
       topicIdRef.current = id;
-      fetchUrl = `${import.meta.env.VITE_API_URL}/chats/${id}`;
+      fetchUrl = `/chats/${id}`;
       setCurrentState("chats");
     } else if (currentState === "chats") {
-      /**
-       * this case for chat selection among the chats
-       * that under the selected topic
-       */
-      chatIdRef.current = id;
-      props.onSelectChat?.(id); // burada chat seçimini bildir
-      console.log("Chat selected, notifying parent with ID:", id);
+      if (id != null) onSelectChat?.(id);
+      return;
     }
-    console.log("Fetching URL:", fetchUrl);
 
     try {
-      const res = await fetch(fetchUrl, {
-        method: 'GET',
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-        }
-      });
-      if (!res.ok) throw new Error(`Network error: ${res.status}`);
-      const data = await res.json();
-      setcurrentBarContent(data);
+      const { data } = await api.get(fetchUrl);
+      setCurrentBarContent(data);
     } catch (e) {
       console.error("Fetch failed:", e);
     } finally {
@@ -83,31 +52,22 @@ export default function SideBarContentController(props) {
     }
   }
 
-  async function goPreviousMenu(id) {
-    console.log("Going back from currentstate:", currentState);
-
-    let fetchUrl = ``;
+  async function goPreviousMenu() {
+    let fetchUrl = "";
 
     if (currentState === "chats") {
-      fetchUrl = `${import.meta.env.VITE_API_URL}/topics/${studyIdRef.current}`;
+      fetchUrl = `/topics/${studyIdRef.current}`;
       setCurrentState("topics");
     } else if (currentState === "topics") {
-      fetchUrl = `${import.meta.env.VITE_API_URL}/studies`;
+      fetchUrl = `/studies`;
       setCurrentState("studies");
+    } else {
+      return;
     }
-    console.log("Fetching URL:", fetchUrl);
 
     try {
-      const res = await fetch(fetchUrl, {
-        method: 'GET',
-        headers: {
-          "Content-Type": "application/json",
-          "authorization": `Bearer ${localStorage.getItem("access_token")}`
-        }
-      });
-      if (!res.ok) throw new Error(`Network error: ${res.status}`);
-      const data = await res.json();
-      setcurrentBarContent(data);
+      const { data } = await api.get(fetchUrl);
+      setCurrentBarContent(data);
     } catch (e) {
       console.error("Fetch failed:", e);
     } finally {
@@ -116,79 +76,88 @@ export default function SideBarContentController(props) {
   }
 
   async function handleAdd() {
+    if (!newItemTitle.trim()) return;
+
     let fetchUrl = "";
     let bodyData = {};
 
-    // 1. Hangi state'teyiz, ona göre endpoint ve veri belirle
     if (currentState === "studies") {
-      fetchUrl = `${import.meta.env.VITE_API_URL}/studies`;
-      bodyData = { title: prompt("Yeni study ismi:") };
+      fetchUrl = '/studies';
+      bodyData = { title: newItemTitle.trim() };
+    } else if (currentState === "topics") {
+      fetchUrl = '/topics';
+      bodyData = { title: newItemTitle.trim(), study_id: studyIdRef.current };
+    } else if (currentState === "chats") {
+      fetchUrl = '/chats';
+      bodyData = { title: newItemTitle.trim(), topic_id: topicIdRef.current };
     }
-    else if (currentState === "topics") {
-      fetchUrl = `${import.meta.env.VITE_API_URL}/topics`;
-      bodyData = {
-        title: prompt("Yeni topic ismi:"),
-        study_id: studyIdRef.current
-      };
-    }
-    else if (currentState === "chats") {
-      fetchUrl = `${import.meta.env.VITE_API_URL}/chats`;
-      bodyData = {
-        title: prompt("Yeni chat ismi:"),
-        topic_id: topicIdRef.current
-      };
-    }
-
-    if (!bodyData.title) return; // kullanıcı boş bırakırsa çık
 
     try {
-      const res = await fetch(fetchUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "authorization": `Bearer ${localStorage.getItem("access_token")}`
-        },
-        body: JSON.stringify(bodyData),
-      });
-
-      if (!res.ok) throw new Error(`Network error: ${res.status}`);
-
-      const newItem = await res.json();
-
-      // listeyi anında güncelle (UI refresh için)
-      setcurrentBarContent([...currentBarContent, { id: newItem.id, title: bodyData.title }]);
+      const { data: newItem } = await api.post(fetchUrl, bodyData);
+      setCurrentBarContent(prev => [...prev, { id: newItem.id, title: newItemTitle.trim() }]);
+      setNewItemTitle("");
+      setIsAdding(false);
     } catch (e) {
       console.error("POST failed:", e);
     }
   }
 
+  const addLabel = currentState === "studies" ? "study" : currentState === "topics" ? "topic" : "chat";
+  const heading = currentState === "studies" ? "Studies" : currentState === "topics" ? "Topics" : "Chats";
 
   return (
     <div>
-      <button onClick={() => goPreviousMenu()}>Back Menu</button>
-      <h2>Geçmiş Chatler</h2>
-      {loading && <p>Yükleniyor…</p>}
+      <button
+        className="sidebar-back-btn"
+        onClick={goPreviousMenu}
+        disabled={currentState === "studies"}
+      >
+        ← Back
+      </button>
 
-      <ul>
-        {currentBarContent.length === 0 ? (
-          <p>No items available</p>
+      <p className="sidebar-section-label">{heading}</p>
+
+      {loading && <p className="sidebar-loading">Loading…</p>}
+
+      <ul className="sidebar-list">
+        {!loading && currentBarContent.length === 0 ? (
+          <p className="sidebar-empty">No items</p>
         ) : (
           currentBarContent.map((c, index) => (
             <li key={c.id || index}>
-              <button onClick={() => onSelect?.(c.id)}>{c.title}</button>
+              <button className="sidebar-item-btn" onClick={() => onSelect(c.id)}>
+                {c.title}
+              </button>
             </li>
           ))
         )}
       </ul>
-      <button onClick={() => handleAdd()}>
-        + Add {
-          (() => {
-            if (currentState === "studies") return "study";
-            else if (currentState === "topics") return "topic";
-            else if (currentState === "chats") return "chat";
-          })()
-        }
-      </button>
+
+      {isAdding ? (
+        <div className="sidebar-add-form">
+          <input
+            className="sidebar-add-input"
+            autoFocus
+            value={newItemTitle}
+            onChange={(e) => setNewItemTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleAdd();
+              if (e.key === "Escape") { setIsAdding(false); setNewItemTitle(""); }
+            }}
+            placeholder={`${addLabel} name`}
+          />
+          <div className="sidebar-add-actions">
+            <button className="sidebar-add-confirm" onClick={handleAdd}>Add</button>
+            <button className="sidebar-add-cancel" onClick={() => { setIsAdding(false); setNewItemTitle(""); }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button className="sidebar-add-btn" onClick={() => setIsAdding(true)}>
+          + Add {addLabel}
+        </button>
+      )}
     </div>
-  )
+  );
 }

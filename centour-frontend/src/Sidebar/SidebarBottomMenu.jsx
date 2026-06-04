@@ -1,39 +1,27 @@
-import { api, clearTokens } from "../api/ApiClient";
+import './SidebarBottomMenu.css';
+import { clearTokens } from "../api/ApiClient";
+import { useTheme } from '../context/ThemeContext';
 
-export default function SidebarBottomMenu(props) {
+export default function SidebarBottomMenu({ resetChat, onLogout }) {
+  const { theme, toggle } = useTheme();
 
-  const handleLogout = async () => {
-    try {
-      //await api.post("/logout"); // Backend'e logout isteği gönder
-    } catch (err) {
-      console.error("Logout failed:", err);
-    } finally {
-      clearTokens(); // Token'ları temizle
-      window.location.href = "/login"; // Kullanıcıyı login sayfasına yönlendir
-    }
-  };
+  function handleLogout() {
+    clearTokens();
+    onLogout?.();
+  }
+
   return (
-    <div style={styles.sidebar_bottom_menu}>
-      <button style={styles.button} onClick={props.resetChat}>Dashboard</button>
-      <button style={styles.button}>Settings</button>
-      <button style={styles.button} onClick={handleLogout}>Logout</button>
-    </div >
+    <div className="sidebar-bottom">
+      <div className="theme-toggle-row">
+        <span className="theme-label">{theme === 'dark' ? 'Dark' : 'Light'}</span>
+        <button className={`theme-pill ${theme}`} onClick={toggle} aria-label="Toggle theme">
+          <span className="theme-pill-thumb" />
+        </button>
+      </div>
+
+      <button className="sidebar-bottom-btn" onClick={resetChat}>Dashboard</button>
+      <button className="sidebar-bottom-btn">Settings</button>
+      <button className="sidebar-bottom-btn logout" onClick={handleLogout}>Logout</button>
+    </div>
   );
-}
-const styles = {
-  sidebar_bottom_menu:
-  {
-    borderTop: "1px solid #444",
-    paddingTop: "10px",
-  },
-  button:
-  {
-    width: "30%",
-    padding: "10px",
-    backgroundColor: "#3f3fff",
-    border: "black",
-    color: "white",
-    borderRadius: "8px",
-    cursor: "pointer",
-  },
 }

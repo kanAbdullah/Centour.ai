@@ -1,0 +1,79 @@
+.sidebar-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: border-color 0.3s;
+}
+
+/* ── Theme toggle ── */
+.theme-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px 10px;
+}
+
+.theme-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: color 0.3s;
+}
+
+.theme-pill {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  padding: 0;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 0.3s;
+  background: rgba(var(--accent-rgb), 0.2);
+}
+
+.theme-pill-thumb {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: transform 0.3s, background 0.3s;
+}
+
+/* Light: thumb left — 3px gap */
+.theme-pill.light .theme-pill-thumb {
+  transform: translateX(3px);
+}
+
+/* Dark: thumb right — 44 - 18 - 3 = 23px */
+.theme-pill.dark .theme-pill-thumb {
+  transform: translateX(23px);
+}
+
+/* ── Nav buttons ── */
+.sidebar-bottom-btn {
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-bottom-btn:hover {
+  background: var(--overlay);
+  color: var(--text-secondary);
+}
+
+.sidebar-bottom-btn.logout:hover {
+  background: var(--error-bg);
+  color: var(--error-text);
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
+import { api, getAccess } from "../api/ApiClient.jsx";
 import "./ChatView.css";
 
 export default function ChatView({ chatId }) {
@@ -12,27 +12,13 @@ export default function ChatView({ chatId }) {
   const [streamingMessage, setStreamingMessage] = useState("");
 
   const apiUrl = import.meta.env.VITE_API_URL;
-  const token = localStorage.getItem("access_token");
 
-  // 1️⃣ Chat mesajlarını yükle
   useEffect(() => {
-    console.log("ChatView mounting or chatId changed:", chatId);
-    if (!chatId) {
-      console.log("No chat ID provided, skipping message load.");
-      return;
-    }
-    console.log("Loading messages for chat ID:", chatId);
+    if (!chatId) return;
+
     async function loadMessages() {
       try {
-        const res = await fetch(`${apiUrl}/messages/${chatId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          }
-        });
-        if (!res.ok) throw new Error("Network error");
-        const data = await res.json();
+        const { data } = await api.get(`/messages/${chatId}`);
         setMessages(data);
       } catch (e) {
         console.error(e);
@@ -44,7 +30,6 @@ export default function ChatView({ chatId }) {
     loadMessages();
   }, [chatId]);
 
-  // 2️⃣ Yeni mesaj gönder (STREAMING ile)
   async function sendMessage() {
     if (!input.trim() || isStreaming) return;
 
@@ -53,34 +38,26 @@ export default function ChatView({ chatId }) {
     setIsStreaming(true);
     setStreamingMessage("");
 
-    // Kullanıcı mesajını hemen ekle
-    const tempUserMsg = {
-      id: Date.now(), // Geçici ID
+    setMessages(prev => [...prev, {
+      id: Date.now(),
       chat_id: chatId,
       author: "user",
       message: userMessage,
       role: "user"
-    };
-    setMessages(prev => [...prev, tempUserMsg]);
+    }]);
 
     try {
       const res = await fetch(`${apiUrl}/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${getAccess()}`
         },
-        body: JSON.stringify({
-          chat_id: chatId,
-          content: userMessage
-        }),
+        body: JSON.stringify({ chat_id: chatId, content: userMessage }),
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-      // SSE streaming okuma
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -88,57 +65,44 @@ export default function ChatView({ chatId }) {
 
       while (true) {
         const { done, value } = await reader.read();
-        
         if (done) break;
-        
+
         buffer += decoder.decode(value, { stream: true });
-        
-        // SSE mesajlarını parse et (data: {...}\n\n formatında)
+
         const lines = buffer.split("\n\n");
-        buffer = lines.pop() || ""; // Son tamamlanmamış satırı sakla
-        
+        buffer = lines.pop() || "";
+
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const jsonStr = line.substring(6);
-            try {
-              const data = JSON.parse(jsonStr);
-              
-              if (data.error) {
-                console.error("Streaming error:", data.error);
-                setStreamingMessage(data.error);
-                break;
-              }
-              
-              if (data.done) {
-                // Streaming tamamlandı
-                console.log("Streaming tamamlandı");
-                fullResponse = data.full_response || fullResponse;
-                
-                // Tamamlanan mesajı listeye ekle
-                const systemMsg = {
-                  id: Date.now() + 1,
-                  chat_id: chatId,
-                  author: "system",
-                  message: fullResponse,
-                  role: "assistant"
-                };
-                setMessages(prev => [...prev, systemMsg]);
-                setStreamingMessage("");
-                setIsStreaming(false);
-                
-              } else if (data.chunk) {
-                // Yeni chunk geldi
-                fullResponse += data.chunk;
-                setStreamingMessage(fullResponse);
-              }
-              
-            } catch (e) {
-              console.error("JSON parse error:", e, "Line:", jsonStr);
+          if (!line.startsWith("data: ")) continue;
+
+          try {
+            const data = JSON.parse(line.substring(6));
+
+            if (data.error) {
+              setStreamingMessage(data.error);
+              break;
             }
+
+            if (data.done) {
+              fullResponse = data.full_response || fullResponse;
+              setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                chat_id: chatId,
+                author: "system",
+                message: fullResponse,
+                role: "assistant"
+              }]);
+              setStreamingMessage("");
+              setIsStreaming(false);
+            } else if (data.chunk) {
+              fullResponse += data.chunk;
+              setStreamingMessage(fullResponse);
+            }
+          } catch (e) {
+            console.error("JSON parse error:", e);
           }
         }
       }
-
     } catch (e) {
       console.error("Send failed:", e);
       setIsStreaming(false);
@@ -146,7 +110,6 @@ export default function ChatView({ chatId }) {
     }
   }
 
-  // Enter tuşu ile gönder
   function handleKeyPress(e) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -156,26 +119,24 @@ export default function ChatView({ chatId }) {
 
   return (
     <div className="chat-view">
-      <h3>Chat</h3>
-      {loading && <p>Yükleniyor…</p>}
-      
+      <div className="chat-header">
+        <h3>Chat</h3>
+      </div>
+
       <div className="messages">
+        {loading && <p className="chat-loading">Loading…</p>}
+
         {messages.map((m) => (
           <div key={m.id} className={`msg ${m.author}`}>
-            <b>{m.author === "user" ? "user" : "system"}: </b>
-            <Markdown remarkPlugins={[remarkGfm]}>
-              {m.message}
-            </Markdown>
+            <b>{m.author === "user" ? "You" : "AI"}</b>
+            <Markdown remarkPlugins={[remarkGfm]}>{m.message}</Markdown>
           </div>
         ))}
-        
-        {/* Streaming mesajı (henüz tamamlanmamış) */}
+
         {isStreaming && streamingMessage && (
           <div className="msg system streaming">
-            <b>AI: </b>
-            <Markdown remarkPlugins={[remarkGfm]}>
-              {streamingMessage}
-            </Markdown>
+            <b>AI</b>
+            <Markdown remarkPlugins={[remarkGfm]}>{streamingMessage}</Markdown>
             <span className="cursor-blink">▊</span>
           </div>
         )}
@@ -186,11 +147,11 @@ export default function ChatView({ chatId }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Mesaj yaz..."
+          placeholder="Type a message..."
           disabled={isStreaming}
         />
         <button onClick={sendMessage} disabled={isStreaming}>
-          {isStreaming ? "Gönderiliyor..." : "Gönder"}
+          {isStreaming ? "Sending..." : "Send"}
         </button>
       </div>
     </div>
