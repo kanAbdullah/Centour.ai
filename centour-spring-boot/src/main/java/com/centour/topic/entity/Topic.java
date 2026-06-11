@@ -27,4 +27,5 @@ public class Topic {
     public UUID getId() { return id; }
     public String getTitle() { return title; }
     public UUID getStudyId() { return studyId; }
+    public void setTitle(String title) { this.title = title; }
 }

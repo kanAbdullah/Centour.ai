@@ -27,4 +27,5 @@ public class Study {
     public UUID getId() { return id; }
     public String getTitle() { return title; }
     public UUID getOwnerUserId() { return ownerUserId; }
+    public void setTitle(String title) { this.title = title; }
 }

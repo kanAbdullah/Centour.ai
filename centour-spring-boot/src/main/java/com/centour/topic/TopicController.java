@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RestController
@@ -27,5 +28,25 @@ public class TopicController {
         UUID studyId = UUID.fromString(body.get("study_id"));
         Topic topic = topicService.createTopic(body.get("title"), studyId);
         return ResponseEntity.ok(Map.of("topic_id", topic.getId().toString()));
+    }
+
+    @PatchMapping("/topics/{id}")
+    public ResponseEntity<?> renameTopic(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+        try {
+            Topic topic = topicService.renameTopic(id, body.get("title"));
+            return ResponseEntity.ok(Map.of("id", topic.getId().toString(), "title", topic.getTitle()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/topics/{id}")
+    public ResponseEntity<?> deleteTopic(@PathVariable UUID id) {
+        try {
+            topicService.deleteTopic(id);
+            return ResponseEntity.noContent().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }
     }
 }

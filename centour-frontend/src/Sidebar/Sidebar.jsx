@@ -2,7 +2,7 @@ import './Sidebar.css';
 import SidebarBottomMenu from "./SidebarBottomMenu";
 import SideBarContentController from "./SideBarContentController";
 
-export default function Sidebar({ onSelectChat, resetChat, onLogout }) {
+export default function Sidebar({ onSelectChat, resetChat, onLogout, activeChat }) {
   return (
     <div className="sidebar">
       <div className="sidebar-brand">
@@ -14,7 +14,7 @@ export default function Sidebar({ onSelectChat, resetChat, onLogout }) {
         </span>
       </div>
       <div className="sidebar-content">
-        <SideBarContentController onSelectChat={onSelectChat} />
+        <SideBarContentController onSelectChat={onSelectChat} resetChat={resetChat} activeChat={activeChat} />
       </div>
       <SidebarBottomMenu resetChat={resetChat} onLogout={onLogout} />
     </div>

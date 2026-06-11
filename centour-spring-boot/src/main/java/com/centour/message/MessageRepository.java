@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findByChatId(UUID chatId);
+    void deleteByChatId(UUID chatId);
 }

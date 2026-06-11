@@ -20,6 +20,9 @@ public class Message {
     @Column(columnDefinition = "TEXT")
     private String message;
 
+    @Column(columnDefinition = "TEXT")
+    private String sources;
+
     public Message() {}
 
     public Message(UUID chatId, String author, String message) {
@@ -28,8 +31,16 @@ public class Message {
         this.message = message;
     }
 
+    public Message(UUID chatId, String author, String message, String sources) {
+        this.chatId = chatId;
+        this.author = author;
+        this.message = message;
+        this.sources = sources;
+    }
+
     public UUID getId() { return id; }
     public UUID getChatId() { return chatId; }
     public String getAuthor() { return author; }
     public String getMessage() { return message; }
+    public String getSources() { return sources; }
 }

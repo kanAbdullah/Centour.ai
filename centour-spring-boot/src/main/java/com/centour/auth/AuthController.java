@@ -2,6 +2,8 @@ package com.centour.auth;
 
 import com.centour.auth.dto.LoginRequest;
 import com.centour.auth.dto.RegisterRequest;
+import com.centour.user.UserRepository;
+import com.centour.user.entity.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,14 +13,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 public class AuthController {
 
     private final AuthService authService;
+    private final UserRepository userRepository;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, UserRepository userRepository) {
         this.authService = authService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/register")
@@ -74,5 +79,17 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("msg", "invalid"));
         }
         return ResponseEntity.ok(Map.of("msg", "ok"));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me(Authentication auth) {
+        UUID userId = UUID.fromString((String) auth.getPrincipal());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId().toString(),
+                "email", user.getEmail(),
+                "username", user.getUsername()
+        ));
     }
 }

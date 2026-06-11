@@ -27,4 +27,5 @@ public class Chat {
     public UUID getId() { return id; }
     public String getTitle() { return title; }
     public UUID getTopicId() { return topicId; }
+    public void setTitle(String title) { this.title = title; }
 }

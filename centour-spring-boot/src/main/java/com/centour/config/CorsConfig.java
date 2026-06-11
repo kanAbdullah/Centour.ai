@@ -18,7 +18,7 @@ public class CorsConfig {
                             "http://localhost:5173",            // Vite dev
                             "https://centour-ai.vercel.app"     // prod
                         )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }

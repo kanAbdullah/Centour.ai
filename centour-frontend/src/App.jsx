@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
 import Sidebar from './Sidebar/Sidebar';
 import ChatView from './Chat/ChatView';
 import LoginPage from './Authentication/LoginPage';
@@ -9,7 +10,7 @@ import Dashboard from './DashBoard/Dashboard.jsx';
 import { api, getAccess, clearTokens } from './api/ApiClient.jsx';
 
 function AppContent() {
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [selectedChat, setSelectedChat] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -30,19 +31,20 @@ function AppContent() {
   function handleLogout() {
     clearTokens();
     setIsAuthenticated(false);
-    setSelectedChatId(null);
+    setSelectedChat(null);
   }
 
   return (
     isAuthenticated ? (
       <div className="app-layout">
         <Sidebar
-          onSelectChat={setSelectedChatId}
-          resetChat={() => setSelectedChatId(null)}
+          onSelectChat={setSelectedChat}
+          resetChat={() => setSelectedChat(null)}
           onLogout={handleLogout}
+          activeChat={selectedChat}
         />
         <div className="app-main">
-          {selectedChatId !== null ? <ChatView chatId={selectedChatId} /> : <Dashboard />}
+          {selectedChat ? <ChatView chatId={selectedChat.id} chatPath={selectedChat} /> : <Dashboard />}
         </div>
       </div>
     ) : (
@@ -54,7 +56,9 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </ThemeProvider>
   );
 }

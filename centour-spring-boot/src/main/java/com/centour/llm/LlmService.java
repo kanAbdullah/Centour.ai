@@ -1,5 +1,6 @@
 package com.centour.llm;
 
+import com.centour.document.RetrievedChunk;
 import com.centour.message.entity.Message;
 import com.google.genai.Client;
 import com.google.genai.ResponseStream;
@@ -21,16 +22,28 @@ public class LlmService {
         this.client = new Client.Builder().apiKey(apiKey).build();
     }
 
-    public void askStream(List<Message> messages, Consumer<String> onChunk) {
+    public void askStream(List<Message> messages, List<RetrievedChunk> context, Consumer<String> onChunk) {
         if (messages == null || messages.isEmpty()) {
             throw new IllegalArgumentException("Empty messages list");
         }
-        String formatted = messages.stream()
+
+        StringBuilder prompt = new StringBuilder();
+        if (context != null && !context.isEmpty()) {
+            prompt.append("Reference material from the user's attached study documents. ")
+                    .append("Use it to ground your answer when relevant, and mention the source filename when you do.\n\n");
+            for (RetrievedChunk chunk : context) {
+                prompt.append("[").append(chunk.filename()).append("]\n")
+                        .append(chunk.content()).append("\n\n");
+            }
+            prompt.append("---\n\n");
+        }
+
+        prompt.append(messages.stream()
                 .map(m -> m.getAuthor() + ": " + m.getMessage())
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.joining("\n")));
 
         try (ResponseStream<GenerateContentResponse> stream =
-                     client.models.generateContentStream(MODEL, formatted, null)) {
+                     client.models.generateContentStream(MODEL, prompt.toString(), null)) {
             for (GenerateContentResponse chunk : stream) {
                 String text = chunk.text();
                 if (text != null && !text.isEmpty()) {
